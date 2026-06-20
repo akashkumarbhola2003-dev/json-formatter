@@ -1,67 +1,71 @@
 import { useState } from "react";
 import "./App.css";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-  const [error, setError] = useState("");
-  const [isValid, setIsValid] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
   const handleInputChange = (e) => {
-    const value = e.target.value;
-    setInput(value);
+    setInput(e.target.value);
+  };
 
-    if (!value.trim()) {
-      setError("");
-      setIsValid(false);
+  const formatJSON = () => {
+    if (!input.trim()) {
+      toast.warning("Please enter JSON");
       return;
     }
 
     try {
-      JSON.parse(value);
-      setError("");
-      setIsValid(true);
-    } catch {
-      setError("Invalid JSON");
-      setIsValid(false);
-    }
-  };
-
-  const formatJSON = () => {
-    try {
       const parsed = JSON.parse(input);
+
       setOutput(JSON.stringify(parsed, null, 2));
-      setError("");
-      setIsValid(true);
-    } catch {
-      setOutput("");
-      setError("Invalid JSON");
-      setIsValid(false);
+
+      toast.success("JSON formatted successfully!");
+    } catch (err) {
+      setOutput(`❌ ERROR:\n\n${err.message}`);
+
+      toast.error(err.message);
     }
   };
 
   const minifyJSON = () => {
+    if (!input.trim()) {
+      toast.warning("Please enter JSON");
+      return;
+    }
+
     try {
       const parsed = JSON.parse(input);
+
       setOutput(JSON.stringify(parsed));
-      setError("");
-      setIsValid(true);
-    } catch {
-      setOutput("");
-      setError("Invalid JSON");
-      setIsValid(false);
+
+      toast.success("JSON minified successfully!");
+    } catch (err) {
+      setOutput(`❌ ERROR:\n\n${err.message}`);
+
+      toast.error(err.message);
     }
   };
 
   const copyOutput = () => {
-    if (!output) return;
+    if (!output) {
+      toast.warning("Nothing to copy");
+      return;
+    }
+
     navigator.clipboard.writeText(output);
-    alert("Copied Successfully!");
+
+    toast.success("Copied Successfully!");
   };
 
   const downloadJSON = () => {
-    if (!output) return;
+    if (!output) {
+      toast.warning("Nothing to download");
+      return;
+    }
 
     const blob = new Blob([output], {
       type: "application/json",
@@ -75,6 +79,8 @@ function App() {
     a.click();
 
     URL.revokeObjectURL(url);
+
+    toast.success("Download started");
   };
 
   const loadExample = () => {
@@ -91,19 +97,19 @@ function App() {
 
     setInput(example);
     setOutput("");
-    setError("");
-    setIsValid(true);
+
+    toast.success("Example Loaded");
   };
 
   const clearAll = () => {
     setInput("");
     setOutput("");
-    setError("");
-    setIsValid(false);
+
+    toast.info("Cleared");
   };
 
-  const lineCount = output ? output.split("\n").length : 0;
-  const charCount = output.length;
+  const lineCount = input ? input.split("\n").length : 0;
+  const charCount = input.length;
 
   return (
     <div className={darkMode ? "container dark" : "container"}>
@@ -155,18 +161,6 @@ function App() {
         <button onClick={clearAll}>Clear</button>
       </div>
 
-      {isValid && (
-        <div className="badge success-badge">
-          ✅ VALID JSON
-        </div>
-      )}
-
-      {!isValid && error && (
-        <div className="badge error-badge">
-          ❌ INVALID JSON
-        </div>
-      )}
-
       <div className="stats">
         <p>Characters: {charCount}</p>
         <p>Lines: {lineCount}</p>
@@ -186,6 +180,12 @@ function App() {
 
         <p>akashkumarbhola2003@gmail.com</p>
       </footer>
+
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        theme={darkMode ? "dark" : "light"}
+      />
     </div>
   );
 }
